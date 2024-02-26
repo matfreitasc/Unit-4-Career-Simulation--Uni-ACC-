@@ -1,0 +1,11 @@
+{
+    "name": "ecommerce-api",
+    "version": "1.0.0",
+    "description": "ecommerce API",
+    "title": "Ecommerce API",
+    "url": "http://localhost:3000",
+    "template": {
+        "withCompare": true,
+        "withGenerator": true
+    }
+}
