@@ -6,7 +6,7 @@ const path = require('path')
 // Postgres Database
 const pg = require('pg')
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3000
 
 const client = new pg.Client(process.env.DATABASE_URL)
 
@@ -15,8 +15,8 @@ const client = new pg.Client(process.env.DATABASE_URL)
  * @api public
  */
 
-app.use(express.static('public'))
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}!`)
+    console.log(`App is listening on port ${PORT}!`)
 })
