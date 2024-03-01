@@ -23,7 +23,7 @@ run `npm start` to start the server.
 
 
 |     Due   | User Role  |   Task  | Completed | Route |
-|--------------|------------|---------|-----------|-------|
+|--------------|:-------------:|:-------------:|:-------------:|:-------------:|
 | Feb 29, 2024 | Logged Out | Access the website via the internet so I can browse and purchase products.| | |
 | Feb 29, 2024 | Logged Out | View all available products. | | |
 | Feb 29, 2024 |   Admin    |  View a list of all products.     | | |
