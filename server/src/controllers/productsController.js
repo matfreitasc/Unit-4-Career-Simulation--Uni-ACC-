@@ -5,8 +5,11 @@ client.connect()
 
 const getAllProducts = async (req, res) => {
     try {
-        const { rows } = await client.query('SELECT * FROM products')
-        res.json(rows)
+        // get all products where available is true
+        const { rows } = await client.query(
+            'SELECT * FROM products WHERE available = true'
+        )
+        res.status(200).json(rows)
     } catch (error) {
         console.error(error)
     }
