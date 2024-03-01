@@ -29,7 +29,7 @@ const login = async (req, res) => {
                     message: 'Login successful',
                     user: {
                         id: user.id,
-                        email: user.email,
+                        ...user,
                     },
                 })
             } else {
@@ -44,7 +44,7 @@ const login = async (req, res) => {
 }
 
 const register = async (req, res) => {
-    const { name, email, password } = req.body
+    const { first_name, last_name, email, password } = req.body
 
     if ((!email, !password)) {
         res.status(400).send('Email and password are required')
@@ -61,14 +61,20 @@ const register = async (req, res) => {
         } else {
             const hashedPassword = await bcrypt.hash(password, 15)
             await client.query(
-                'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)',
-                [name, email, hashedPassword]
+                'INSERT INTO users (first_name,last_name, email, password) VALUES ($1, $2, $3,$4)',
+                [first_name, last_name, email, hashedPassword]
             )
-            res.status(200).json({
+            // after user creating the user, login the user
+            const { rows } = await client.query(
+                'SELECT * FROM users WHERE email = $1',
+                [email]
+            )
+            const user = rows[0]
+            res.status(201).json({
                 message: 'User created',
                 user: {
-                    name,
-                    email,
+                    ...user,
+                    id: user.id,
                 },
             })
         }
