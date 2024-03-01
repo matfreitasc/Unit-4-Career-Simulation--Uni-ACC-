@@ -25,9 +25,9 @@ run `npm start` to start the server.
 |     Due   | User Role  |   Task  | Completed | Route |
 |--------------|:-------------:|:-------------:|:-------------:|:-------------:|
 | Feb 29, 2024 | Logged Out | Access the website via the internet so I can browse and purchase products.| | |
-| Feb 29, 2024 | Logged Out | View all available products. | | |
+| Feb 29, 2024 | Logged Out | View all available products. | :heavy_check_mark: |`/api/products/` |
 | Feb 29, 2024 |   Admin    |  View a list of all products.     | | |
-| Feb 29, 2024 |  Engineer  | Have a well-seeded database so that I can simulate several different scenarios for the user stories below. | | |
+| Feb 29, 2024 |  Engineer  | Have a well-seeded database so that I can simulate several different scenarios for the user stories below. |:heavy_check_mark: | `npm run db:seed` |
 | Mar 4, 2024  | Logged Out |   View the details for an individual product, including product descriptions, photos, price, etc.| :heavy_check_mark: | |
 | Mar 4, 2024  |   Admin    |   Add, edit, and remove products.| | |
 | Mar 4, 2024  |   Admin    |   View a list of all users.    | | |
