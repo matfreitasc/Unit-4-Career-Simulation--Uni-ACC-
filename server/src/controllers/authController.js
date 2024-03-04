@@ -18,8 +18,12 @@ const login = async (req, res) => {
     if (!user) return res.status(404).send('User not found')
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
-        const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET)
-        const refreshToken = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_TOKEN_SECRET)
+        const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '30s',
+        })
+        const refreshToken = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_TOKEN_SECRET, {
+            expiresIn: '1d',
+        })
         await client.query('UPDATE users SET refresh_token = $1 WHERE id = $2 RETURNING *', [refreshToken, user.id])
 
         res.cookie('jwt', refreshToken, {
