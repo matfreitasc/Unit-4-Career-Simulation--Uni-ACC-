@@ -1,7 +1,6 @@
 const pg = require('pg')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { validate } = require('uuid')
 
 const client = new pg.Client(process.env.DATABASE_URL)
 
@@ -29,8 +28,6 @@ const login = async (req, res) => {
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000,
-            secure: true,
-            sameSite: 'none',
         })
         res.status(200).json({
             message: 'User logged in',
@@ -63,7 +60,63 @@ const register = async (req, res) => {
     })
 }
 
+const logout = async (req, res) => {
+    const cookies = req.cookies
+    if (!cookies?.jwt) {
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000,
+        })
+        return res.sendStatus(204)
+    }
+
+    const refreshToken = cookies.jwt
+    const user = await client.query('SELECT * FROM users WHERE refresh_token = $1', [refreshToken])
+
+    if (!user.rows[0]) {
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000,
+        })
+        return res.sendStatus(204)
+    }
+
+    await client.query('UPDATE users SET refresh_token = $1 WHERE id = $2 RETURNING *', [null, user.rows[0].id])
+    res.clearCookie('jwt', {
+        httpOnly: true,
+        // secured: true,
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+    res.status(200).send('User logged out')
+}
+
+const refreshToken = async (req, res) => {
+    const cookies = req.cookies
+
+    if (!cookies?.jwt) return res.sendStatus(401)
+
+    const refreshToken = cookies.jwt
+    const user = await client.query('SELECT * FROM users WHERE refresh_token = $1', [refreshToken])
+
+    if (!user.rows[0]) return res.status(403).send('Forbidden')
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
+        if (error || user.rows[0].email !== decoded.email) return res.status(403).send('Forbidden')
+        const accessToken = jwt.sign(
+            { email: user.rows[0].email, id: user.rows[0].id },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: '30s',
+            }
+        )
+        res.status(200).json({
+            accessToken,
+        })
+    })
+}
+
 module.exports = {
     login,
     register,
+    logout,
+    refreshToken,
 }

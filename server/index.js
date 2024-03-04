@@ -6,6 +6,7 @@ const path = require('path')
 const cors = require('cors')
 const corsOptions = require('./src/config/corsOptions')
 const verifyJWT = require('./src/middleware/verifyJWT')
+const cookieParser = require('cookie-parser')
 const PORT = process.env.PORT || 3000
 
 // Cross Origin Resource Sharing
@@ -15,6 +16,8 @@ const PORT = process.env.PORT || 3000
 app.use(express.urlencoded({ extended: false }))
 // Middleware to parse JSON
 app.use(express.json())
+// Middleware to parse cookies
+app.use(cookieParser())
 
 app.use(express.static(path.join(__dirname, 'public')))
 
