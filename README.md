@@ -16,7 +16,7 @@ run `npm start` to start the server.
 
 
 ## Database
-`npm run db:create` to create the database`
+`npm run db:create` to create the database
 `npm run db:seed` to seed the database
 
 // create a table to track the progress
@@ -28,7 +28,7 @@ run `npm start` to start the server.
 | Feb 29, 2024 | Logged Out | View all available products. | :heavy_check_mark: |`/api/products/` |
 | Feb 29, 2024 |   Admin    |  View a list of all products.     | | |
 | Feb 29, 2024 |  Engineer  | Have a well-seeded database so that I can simulate several different scenarios for the user stories below. |:heavy_check_mark: | `npm run db:seed` |
-| Mar 4, 2024  | Logged Out |   View the details for an individual product, including product descriptions, photos, price, etc.| :heavy_check_mark: | |
+| Mar 4, 2024  | Logged Out |   View the details for an individual product, including product descriptions, photos, price, etc.| :heavy_check_mark: | `/api/products/` if single product `/api/products/:id` |
 | Mar 4, 2024  |   Admin    |   Add, edit, and remove products.| | |
 | Mar 4, 2024  |   Admin    |   View a list of all users.    | | |
 | Mar 14, 2024 | Logged In  |   Add a product to my cart.    | | |
