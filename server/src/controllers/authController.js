@@ -27,6 +27,8 @@ const login = async (req, res) => {
 
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
+            // secured: true,
+            // sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.status(200).json({
@@ -65,7 +67,8 @@ const logout = async (req, res) => {
     if (!cookies?.jwt) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000,
+            // secured: true,
+            // sameSite: 'none',
         })
         return res.sendStatus(204)
     }
@@ -76,7 +79,8 @@ const logout = async (req, res) => {
     if (!user.rows[0]) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000,
+            // secured: true,
+            // sameSite: 'none',
         })
         return res.sendStatus(204)
     }
@@ -85,7 +89,7 @@ const logout = async (req, res) => {
     res.clearCookie('jwt', {
         httpOnly: true,
         // secured: true,
-        maxAge: 24 * 60 * 60 * 1000,
+        // sameSite: 'none',
     })
     res.status(200).send('User logged out')
 }
