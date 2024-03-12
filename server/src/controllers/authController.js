@@ -1,29 +1,27 @@
-const pg = require('pg')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-
-const client = new pg.Client(process.env.DATABASE_URL)
+const { findUserByEmail, findByToken, updateRefreshToken } = require('../utils/queries')
+const client = require('../config/client')
 
 require('dotenv').config()
-client.connect()
 
 const login = async (req, res) => {
     const { email, password } = req.body
 
     if ((!email, !password)) return res.status(400).send('Email and password are required')
 
-    const findUser = await client.query('SELECT * FROM users WHERE email = $1', [email])
-    const user = findUser.rows[0]
+    const user = await findUserByEmail(email)
+
     if (!user) return res.status(404).send('User not found')
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
         const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '30s',
-        })
-        const refreshToken = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '1d',
         })
-        await client.query('UPDATE users SET refresh_token = $1 WHERE id = $2 RETURNING *', [refreshToken, user.id])
+        const refreshToken = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_TOKEN_SECRET, {
+            expiresIn: '7d',
+        })
+        await updateRefreshToken({ id: user.id, token: refreshToken })
 
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
@@ -45,8 +43,8 @@ const register = async (req, res) => {
 
     if ((!email, !password)) return res.status(400).send('Email and password are required')
 
-    const findUser = await client.query('SELECT * FROM users WHERE email = $1', [email])
-    const user = findUser.rows[0]
+    const user = await findUserByEmail(email)
+
     if (user) return res.status(400).send('User already exists')
     const hashedPassword = await bcrypt.hash(password, 10)
     const newUser = await client.query(
@@ -74,7 +72,7 @@ const logout = async (req, res) => {
     }
 
     const refreshToken = cookies.jwt
-    const user = await client.query('SELECT * FROM users WHERE refresh_token = $1', [refreshToken])
+    const user = await findByToken(refreshToken)
 
     if (!user.rows[0]) {
         res.clearCookie('jwt', {
@@ -85,7 +83,8 @@ const logout = async (req, res) => {
         return res.sendStatus(204)
     }
 
-    await client.query('UPDATE users SET refresh_token = $1 WHERE id = $2 RETURNING *', [null, user.rows[0].id])
+    // await updateRefreshToken(user.rows[0].id, null)
+    await updateRefreshToken({ id: user.rows[0].id, token: null })
     res.clearCookie('jwt', {
         httpOnly: true,
         // secured: true,
@@ -100,18 +99,14 @@ const refreshToken = async (req, res) => {
     if (!cookies?.jwt) return res.sendStatus(401)
 
     const refreshToken = cookies.jwt
-    const user = await client.query('SELECT * FROM users WHERE refresh_token = $1', [refreshToken])
+    const user = await findByToken(refreshToken)
 
-    if (!user.rows[0]) return res.status(403).send('Forbidden')
+    if (!user) return res.status(403).send('Forbidden')
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-        if (error || user.rows[0].email !== decoded.email) return res.status(403).send('Forbidden')
-        const accessToken = jwt.sign(
-            { email: user.rows[0].email, id: user.rows[0].id },
-            process.env.ACCESS_TOKEN_SECRET,
-            {
-                expiresIn: '30s',
-            }
-        )
+        if (error || user.email !== decoded.email) return res.status(403).send('Forbidden')
+        const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '1d',
+        })
         res.status(200).json({
             accessToken,
         })
@@ -119,6 +114,7 @@ const refreshToken = async (req, res) => {
 }
 
 module.exports = {
+    client,
     login,
     register,
     logout,

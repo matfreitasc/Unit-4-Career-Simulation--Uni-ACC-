@@ -1,7 +1,4 @@
-const pg = require('pg')
-const client = new pg.Client(process.env.DATABASE_URL)
-
-client.connect()
+const client = require('../config/client')
 
 const getAllOrders = async (req, res) => {
     try {
@@ -14,10 +11,10 @@ const getAllOrders = async (req, res) => {
 
 const createOrder = async (req, res) => {
     try {
-        const { rows } = await client.query(
-            'INSERT INTO orders (user_id, product_id) VALUES ($1, $2) RETURNING *',
-            [req.body.user_id, req.body.product_id]
-        )
+        const { rows } = await client.query('INSERT INTO orders (user_id, product_id) VALUES ($1, $2) RETURNING *', [
+            req.body.user_id,
+            req.body.product_id,
+        ])
         res.json(rows)
     } catch (error) {
         console.error(error)
@@ -26,10 +23,7 @@ const createOrder = async (req, res) => {
 
 const getOrderById = async (req, res) => {
     try {
-        const { rows } = await client.query(
-            'SELECT * FROM orders WHERE id = $1',
-            [req.params.id]
-        )
+        const { rows } = await client.query('SELECT * FROM orders WHERE id = $1', [req.params.id])
         res.json(rows)
     } catch (error) {
         console.error(error)
@@ -50,10 +44,7 @@ const updateOrder = async (req, res) => {
 
 const deleteOrder = async (req, res) => {
     try {
-        const { rows } = await client.query(
-            'DELETE FROM orders WHERE id = $1 RETURNING *',
-            [req.params.id]
-        )
+        const { rows } = await client.query('DELETE FROM orders WHERE id = $1 RETURNING *', [req.params.id])
         res.json(rows)
     } catch (error) {
         console.error(error)

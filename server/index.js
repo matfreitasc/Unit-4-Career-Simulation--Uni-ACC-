@@ -36,6 +36,16 @@ app.all('*', (req, res) => {
     }
 })
 
-app.listen(PORT, () => {
-    console.log(`App is listening on port ${PORT}!`)
-})
+
+
+const init = async () => {
+    const client = require('./src/config/client')
+    await client.connect()
+    console.log('Connected to database')
+
+    app.listen(PORT, () => {
+        console.log(`App is listening on port ${PORT}!`)
+    })
+}
+
+init()
