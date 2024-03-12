@@ -36,8 +36,6 @@ app.all('*', (req, res) => {
     }
 })
 
-
-
 const init = async () => {
     const client = require('./src/config/client')
     await client.connect()
