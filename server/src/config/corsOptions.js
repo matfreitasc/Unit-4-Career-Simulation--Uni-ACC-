@@ -1,13 +1,9 @@
-const whiteList = ['http://localhost:3000', 'http://localhost:3001']
-
+const whiteList = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173']
+console.log('whiteList:', whiteList)
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (whiteList.indexOf(origin) !== -1) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'))
-        }
-    },
+    origin: whiteList,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
 }
 
 module.exports = corsOptions

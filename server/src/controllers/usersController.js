@@ -9,18 +9,6 @@ const getAllUsers = async (req, res) => {
     }
 }
 
-const createUser = async (req, res) => {
-    try {
-        const { rows } = await client.query('INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *', [
-            req.body.name,
-            req.body.email,
-        ])
-        res.json(rows)
-    } catch (error) {
-        console.error(error)
-    }
-}
-
 const getUserById = async (req, res) => {
     try {
         const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [req.params.id])
@@ -54,7 +42,6 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
     getAllUsers,
-    createUser,
     getUserById,
     updateUser,
     deleteUser,

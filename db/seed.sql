@@ -1,86 +1,119 @@
+DROP TABLE IF EXISTS cart CASCADE;
+DROP TABLE IF EXISTS orderDetails CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS product CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
 
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS carts;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS roles;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE roles (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO roles (name) VALUES ('admin');
-INSERT INTO roles (name) VALUES ('user');
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+);
+
+CREATE TABLE product (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    SKU UUID DEFAULT uuid_generate_v4(),
+    category_id BIGINT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    quantity INT NOT NULL,
+    available BOOLEAN NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
 
 CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    role_id BIGINT NOT NULL DEFAULT 2,
-    first_name VARCHAR(200) NOT NULL,
-    last_name VARCHAR(200) NOT NULL,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    role_id BIGINT DEFAULT 2,
+    first_name VARCHAR(200),
+    last_name VARCHAR(200),
     email VARCHAR(200) NOT NULL UNIQUE,
     password VARCHAR(200) NOT NULL,
-    access_token TEXT,
-    refresh_token TEXT,
+    access_token VARCHAR(225),
+    refresh_token VARCHAR(225),
+    address VARCHAR(100) ,
+    address2 VARCHAR(50),
+    city VARCHAR(90) ,
+    state VARCHAR(20) ,
+    zip VARCHAR(12) ,
+    country VARCHAR(90) ,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-
-
-CREATE TABLE products (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    name VARCHAR(200) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    rating DECIMAL(2, 1) NOT NULL,
-    description TEXT NOT NULL,
-    image_url TEXT NOT NULL,
-    favorite BOOLEAN NOT NULL DEFAULT FALSE,
-    available BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE carts (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    user_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE orders (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    user_id BIGINT NOT NULL,
-    total DECIMAL(10, 2) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    shipping_address VARCHAR(100) NOT NULL,
+    shipping_address2 VARCHAR(50),
+    shipping_city VARCHAR(90) NOT NULL,
+    shipping_state VARCHAR(20) NOT NULL,
+    shipping_zip VARCHAR(12) NOT NULL,
+    shipping_country VARCHAR(90) NOT NULL,
+    email VARCHAR(200) NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    tracking_number VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE order_items (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    order_id BIGINT NOT NULL,
+CREATE TABLE orderDetails (
+    detailsId BIGSERIAL PRIMARY KEY,
+    order_id UUID NOT NULL,
     product_id BIGINT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES orders(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
+CREATE TABLE cart (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    product_id BIGINT NOT NULL,
+    total INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
+);
 
--- Seed data for products
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Apple iPhone 12', 799.99, 4.5, 'The iPhone 12 is a smartphone designed, developed, and marketed by Apple Inc. It is the fourteenth generation, lower-priced iPhone, succeeding the iPhone 11.', 'https://www.apple.com/newsroom/images/product/iphone/standard/Apple_announce-iphone12pro_10132020_big.jpg.large.jpg', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Samsung Galaxy S21', 699.99, 4.3, 'The Samsung Galaxy S21 is a series of Android-based smartphones designed, developed, marketed, and manufactured by Samsung Electronics as part of its Galaxy S series.', 'https://www.samsung.com/us/smartphones/galaxy-s21-5g/buy/hero/hero-image.jpg', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Google Pixel 5', 699.99, 4.2, 'The Google Pixel 5 is a smartphone developed by Google. It was announced on September 30, 2020, and released on October 29, 2020 as the successor to the Pixel 4.', 'https://store.google.com/us/product/pixel_5?hl=en-US', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('OnePlus 9 Pro', 899.99, 4.6, 'The OnePlus 9 Pro is a smartphone developed by OnePlus. It was announced on March 23, 2021, and released on March 26, 2021 as the successor to the OnePlus 8 Pro.', 'https://www.oneplus.com/oneplus-9-pro?from=9_pro', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Xiaomi Mi 11', 699.99, 4.4, 'The Xiaomi Mi 11 is a smartphone developed by Xiaomi Inc. It was announced on December 28, 2020, and released on January 1, 2021 as the successor to the Xiaomi Mi 10.', 'https://www.mi.com/global/mi-11', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Sony Xperia 1 III', 1299.99, 4.7, 'The Sony Xperia 1 III is a smartphone developed by Sony. It was announced on April 14, 2021, and released on August 19, 2021 as the successor to the Sony Xperia 1 II.', 'https://www.sony.com/electronics/smartphones/xperia-1m3', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('Motorola Edge 20 Pro', 699.99, 4.3, 'The Motorola Edge 20 Pro is a smartphone developed by Motorola. It was announced on August 5, 2021, and released on August 19, 2021 as the successor to the Motorola Edge 20.', 'https://www.motorola.com/us/smartphones-motorola-edge-20-pro/p', TRUE, TRUE);
-INSERT INTO products (name, price, rating, description, image_url, favorite, available) VALUES ('LG Velvet', 499.99, 4.0, 'The LG Velvet is a smartphone developed by LG Electronics. It was announced on May 7, 2020, and released on May 15, 2020 as the successor to the LG G8.', 'https://www.lg.com/us/mobile-phones/velvet-5g', TRUE, TRUE);
---
+-- Roles
+
+INSERT INTO roles (name) VALUES ('Admin');
+INSERT INTO roles (name) VALUES ('User');
+
+-- Create categories
+INSERT INTO categories (name, description) VALUES ('Electronics', 'Electronic devices and accessories');
+INSERT INTO categories (name, description) VALUES ('Clothing', 'Clothing and accessories');
+INSERT INTO categories (name, description) VALUES ('Books', 'Books and literature');
+INSERT INTO categories (name, description) VALUES ('Home', 'Home and garden');
+INSERT INTO categories (name, description) VALUES ('Toys', 'Toys and games');
+INSERT INTO categories (name, description) VALUES ('Health', 'Health and beauty');
+
+-- Create products
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('iPhone 12', 'The iPhone 12 is a smartphone designed, developed, and marketed by Apple Inc. It is the fourteenth generation, lower-priced iPhone, succeeding the iPhone 11.', 1, 799.99, 100, true, 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('MacBook Pro', 'The MacBook Pro is a line of Macintosh portable computers introduced in January 2006, by Apple Inc. It is the higher-end model of the MacBook family, sitting above the consumer-focused MacBook Air, and is sold with 13- and 16-inch screens.', 1, 1299.99, 100, true, 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp-spacegray-select-202011?wid=892&hei=820&&qlt=80&.v=1603406905000');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Watch', 'The Apple Watch is a line of smartwatches designed, developed, and marketed by Apple Inc. It incorporates fitness tracking, health-oriented capabilities, and wireless telecommunication, and integrates with iOS and other Apple products and services.', 1, 399.99, 100, true, 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MT613ref_VW_34FR+watch-49-titanium-ultra2_VW_34FR+watch-face-49-trail-ultra2_VW_34FR?wid=2000&hei=2000&fmt=png-alpha&.v=1694507270905');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('AirPods', 'AirPods are wireless Bluetooth earbuds created by Apple. They were first released on December 13, 2016, with a 2nd generation released in 2019 and the premium AirPods Pro released later that year.', 1, 199.99, 100, false, 'https://cdn.mos.cms.futurecdn.net/Qg9oo4uhpH4x6VqhwNX4ED-1200-80.jpg');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple TV', 'Apple TV is a digital media player and microconsole developed and sold by Apple Inc. It is a small network appliance and entertainment device that can receive digital data for visual and audio content such as music, video, video games, or the screen display of certain other devices, and play it on a connected television set or other video display.', 1, 149.99, 100, true, 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/apple-tv-4k-hero-select-202104_FMT_WHH?wid=2000&hei=2000&fmt=jpeg&qlt=95&.v=1617126638000');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Music', 'Apple Music is a music and video streaming service developed by Apple Inc. Users select music to stream to their device on-demand, or they can listen to existing, curated playlists.', 1, 9.99, 100, false, 'https://cdn.mos.cms.futurecdn.net/tyAj9JuL9U7MYmxrK4fxbh.jpg');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Arcade', 'Apple Arcade is a video game subscription service by Apple Inc. for iOS, iPadOS, tvOS, and macOS devices. It was announced in March 2019, and launched in September 2019.', 1, 4.99, 100, false, 'https://www.cnet.com/a/img/resize/f872ceeda8cba8592fe36386f4ef5e395e784d4d/hub/2022/12/22/408c9668-ccf6-4e15-9a94-6b5b34c5e21d/apple-arcade-banner-2023-refresh-1920-1080-1.jpg?auto=webp&fit=crop&height=675&width=1200');
+INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Fitness+', 'Apple Fitness+ is a subscription service that offers workouts designed to be done with Apple Watch. It is available on iPhone, iPad, and Apple TV.', 1, 9.99, 100, true, 'https://64bitapps.com/wp-content/uploads/2022/05/apple-fitness.jpg');

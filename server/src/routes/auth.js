@@ -3,15 +3,6 @@ const router = express.Router()
 
 const authController = require('../controllers/authController')
 
-/**
- * @api {post} /api/auth/register
- * @apiName Register
- * @apiGroup Auth
- * @apiDescription Register a new user
- * @apiBody {String} email
- * @apiBody {String} password
- * @apiSuccess {String} message
- */
 router.post('/register', authController.register)
 
 router.get('/refresh', authController.refreshToken)

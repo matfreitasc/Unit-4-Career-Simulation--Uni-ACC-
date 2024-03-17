@@ -25,8 +25,8 @@ const login = async (req, res) => {
 
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            // secured: true,
-            // sameSite: 'none',
+            secured: true,
+            sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.status(200).json({
@@ -41,21 +41,50 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     const { first_name, last_name, email, password } = req.body
 
-    if ((!email, !password)) return res.status(400).send('Email and password are required')
+    if ((!email, !password)) return res.status(204).send('Email and password are required')
 
     const user = await findUserByEmail(email)
 
     if (user) return res.status(400).send('User already exists')
     const hashedPassword = await bcrypt.hash(password, 10)
+
     const newUser = await client.query(
         'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
         [first_name, last_name, email, hashedPassword]
     )
+
+    const accessToken = jwt.sign(
+        { email: newUser.rows[0].email, id: newUser.rows[0].id },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: '1d',
+        }
+    )
+    const refreshToken = jwt.sign(
+        { email: newUser.rows[0].email, id: newUser.rows[0].id },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: '7d',
+        }
+    )
+
+    await updateRefreshToken({ id: newUser.rows[0].id, token: refreshToken })
+
+    res.cookie('jwt', refreshToken, {
+        httpOnly: true,
+        secured: true,
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+
     res.status(201).json({
         message: 'User created',
         user: {
-            ...newUser.rows[0],
             id: newUser.rows[0].id,
+            email: newUser.rows[0].email,
+            first_name: newUser.rows[0].first_name,
+            last_name: newUser.rows[0].last_name,
+            token: accessToken,
         },
     })
 }

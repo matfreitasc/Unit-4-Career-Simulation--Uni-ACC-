@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser')
 const PORT = process.env.PORT || 3000
 
 // Cross Origin Resource Sharing
-// app.use(cors(corsOptions))
+app.use(cors(corsOptions))
 
 // Middleware to parse URL-encoded bodies
 app.use(express.urlencoded({ extended: false }))
@@ -18,6 +18,11 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 // Middleware to parse cookies
 app.use(cookieParser())
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin)
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+    next()
+})
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -27,6 +32,7 @@ app.use('/api/products', require('./src/routes/products'))
 
 app.use(verifyJWT)
 app.use('/api/orders', require('./src/routes/orders'))
+app.use('/api/cart', require('./src/routes/cart'))
 
 app.all('*', (req, res) => {
     res.status(404)
