@@ -21,20 +21,15 @@ app.use(cookieParser())
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/api/auth', require('./src/routes/auth'))
-app.use('/api/users', require('./src/routes/users'))
 app.use('/api/products', require('./src/routes/products'))
-
-app.use(verifyJWT)
-app.use('/api/orders', require('./src/routes/orders'))
+app.use('/api/auth', require('./src/routes/auth'))
 app.use('/api/cart', require('./src/routes/cart'))
 
+app.use(verifyJWT)
+app.use('/api/users', require('./src/routes/users'))
+
 app.all('*', (req, res) => {
-    res.status(404)
-    if (req.accepts('json')) {
-        res.json({ error: '404 Not Found' })
-        return
-    }
+    return res.status(404).json({ error: '404 Not Found' })
 })
 
 const init = async () => {

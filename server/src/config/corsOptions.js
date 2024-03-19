@@ -4,6 +4,7 @@ const corsOptions = {
     origin: whiteList,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
+    withCredentials: true,
 }
 
 module.exports = corsOptions

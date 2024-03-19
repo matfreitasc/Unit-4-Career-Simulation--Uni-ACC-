@@ -18,8 +18,7 @@
         "dev": "NODE_ENV=development nodemon server",
         "format": "prettier --write .",
         "db:create": "createdb ecommerce_db",
-        "db:seed": "psql -d ecommerce_db -f ./db/seed.sql",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "db:seed": "psql -d ecommerce_db -f ./db/seed.sql"
     },
     "author": "",
     "license": "ISC",

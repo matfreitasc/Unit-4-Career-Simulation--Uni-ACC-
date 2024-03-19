@@ -1,20 +1,13 @@
-DROP TABLE IF EXISTS cart CASCADE;
-DROP TABLE IF EXISTS orderDetails CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+DROP TABLE IF EXISTS cartItems CASCADE;
+DROP TABLE IF EXISTS carts CASCADE;
 DROP TABLE IF EXISTS product CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE roles (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(200) NOT NULL UNIQUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
+-- Create tables for the database
 CREATE TABLE categories (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
@@ -25,10 +18,9 @@ CREATE TABLE categories (
 );
 
 CREATE TABLE product (
-    id BIGSERIAL PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() ,
     name VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
-    SKU UUID DEFAULT uuid_generate_v4(),
     category_id BIGINT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     quantity INT NOT NULL,
@@ -36,13 +28,12 @@ CREATE TABLE product (
     image_url TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    role_id BIGINT DEFAULT 2,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() ,
+    isAdmin BOOLEAN NOT NULL DEFAULT FALSE,
     first_name VARCHAR(200),
     last_name VARCHAR(200),
     email VARCHAR(200) NOT NULL UNIQUE,
@@ -56,49 +47,47 @@ CREATE TABLE users (
     zip VARCHAR(12) ,
     country VARCHAR(90) ,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    shipping_address VARCHAR(100) NOT NULL,
-    shipping_address2 VARCHAR(50),
-    shipping_city VARCHAR(90) NOT NULL,
-    shipping_state VARCHAR(20) NOT NULL,
-    shipping_zip VARCHAR(12) NOT NULL,
-    shipping_country VARCHAR(90) NOT NULL,
-    email VARCHAR(200) NOT NULL,
-    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    tracking_number VARCHAR(50),
+-- Each row represents a cart
+CREATE TABLE carts (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() ,
+    user_id UUID,
+    session_id UUID,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE orderDetails (
-    detailsId BIGSERIAL PRIMARY KEY,
-    order_id UUID NOT NULL,
-    product_id BIGINT NOT NULL,
-    quantity INT NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
-);
-
-CREATE TABLE cart (
+-- Each row represents a product in a cart
+CREATE TABLE cartItems (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID NOT NULL,
-    product_id BIGINT NOT NULL,
-    total INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    cart_id UUID NOT NULL,
+    product_id UUID NOT NULL,
+    quantity INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
--- Roles
+-- Trigger and function to make the first user admin
+CREATE OR REPLACE FUNCTION make_first_user_admin()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (SELECT COUNT(*) FROM users) = 1 THEN
+        UPDATE users SET isAdmin = TRUE WHERE id = NEW.id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-INSERT INTO roles (name) VALUES ('Admin');
-INSERT INTO roles (name) VALUES ('User');
+CREATE TRIGGER trg_after_insert_on_users
+AFTER INSERT ON users
+FOR EACH ROW
+EXECUTE FUNCTION make_first_user_admin();
+
 
 -- Create categories
 INSERT INTO categories (name, description) VALUES ('Electronics', 'Electronic devices and accessories');

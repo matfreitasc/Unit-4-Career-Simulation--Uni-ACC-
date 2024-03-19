@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
-const verifyJWT = (req, res, next) => {
+const verifyAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization
     if (!authHeader)
         return res.status(401).send({
@@ -11,9 +11,10 @@ const verifyJWT = (req, res, next) => {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) return res.status(403).send('Forbidden ')
-        req.userId = decoded.id
+        // verify is the user is an admin
+        req.isAdmin = decoded.isAdmin
         next()
     })
 }
 
-module.exports = verifyJWT
+module.exports = verifyAdmin

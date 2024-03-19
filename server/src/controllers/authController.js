@@ -15,22 +15,26 @@ const login = async (req, res) => {
     if (!user) return res.status(404).send('User not found')
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
-        const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign({ id: user.id, isAdmin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1d',
         })
-        const refreshToken = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_TOKEN_SECRET, {
+        const refreshToken = jwt.sign({ id: user.id, isAdmin: user.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '7d',
         })
         await updateRefreshToken({ id: user.id, token: refreshToken })
 
+        // Only refresh token is stored in the cookie and not the access token
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            secured: true,
-            sameSite: 'none',
+            // secured: false,
+            // sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.status(200).json({
             message: 'User logged in',
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
             accessToken,
         })
     } else {
@@ -54,26 +58,22 @@ const register = async (req, res) => {
     )
 
     const accessToken = jwt.sign(
-        { email: newUser.rows[0].email, id: newUser.rows[0].id },
+        { email: newUser.rows[0].email, id: newUser.rows[0].id, isAdmin: newUser.rows[0].is_admin },
         process.env.ACCESS_TOKEN_SECRET,
         {
             expiresIn: '1d',
         }
     )
-    const refreshToken = jwt.sign(
-        { email: newUser.rows[0].email, id: newUser.rows[0].id },
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-            expiresIn: '7d',
-        }
-    )
+    const refreshToken = jwt.sign({ id: newUser.rows[0].id }, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: '7d',
+    })
 
     await updateRefreshToken({ id: newUser.rows[0].id, token: refreshToken })
 
     res.cookie('jwt', refreshToken, {
         httpOnly: true,
-        secured: true,
-        sameSite: 'none',
+        // secured: true,
+        // sameSite: 'none',
         maxAge: 24 * 60 * 60 * 1000,
     })
 
@@ -113,7 +113,7 @@ const logout = async (req, res) => {
     }
 
     // await updateRefreshToken(user.rows[0].id, null)
-    await updateRefreshToken({ id: user.rows[0].id, token: null })
+    await updateRefreshToken({ id: user.id, token: null })
     res.clearCookie('jwt', {
         httpOnly: true,
         // secured: true,
