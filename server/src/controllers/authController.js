@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { findUserByEmail, findByToken, updateRefreshToken } = require('../utils/queries')
+const { findUserByEmail, findByToken, updateRefreshToken, createUserHandler } = require('../utils/queries')
 const client = require('../config/client')
 
 require('dotenv').config()
@@ -52,10 +52,7 @@ const register = async (req, res) => {
 
     if (user) return res.status(400).send('User already exists')
 
-    await client.query(
-        'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
-        [first_name, last_name, email, hashedPassword]
-    )
+    await createUserHandler(first_name, last_name, email, password)
 
     const newUser = await findUserByEmail(email)
 
@@ -131,8 +128,8 @@ const refreshToken = async (req, res) => {
 
     if (!user) return res.status(403).send('Forbidden')
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-        if (error || user.email !== decoded.email) return res.status(403).send('Forbidden')
-        const accessToken = jwt.sign({ email: user.email, id: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+        if (error || user.id !== decoded.id) return res.status(403).send('Forbidden')
+        const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1d',
         })
         res.status(200).json({

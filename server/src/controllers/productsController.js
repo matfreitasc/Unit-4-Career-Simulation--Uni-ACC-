@@ -28,9 +28,11 @@ const createProduct = async (req, res) => {
 }
 
 const getProductById = async (req, res) => {
+    if (!req.params.id) return res.status(400).json({ message: 'Product ID is required' })
+
     try {
         const { rows } = await client.query('SELECT * FROM product WHERE id = $1', [req.params.id])
-        res.json(rows)
+        res.json(rows[0])
     } catch (error) {
         console.error(error)
     }

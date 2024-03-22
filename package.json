@@ -18,13 +18,16 @@
         "dev": "NODE_ENV=development nodemon server",
         "format": "prettier --write .",
         "db:create": "createdb ecommerce_db",
-        "db:seed": "psql -d ecommerce_db -f ./db/seed.sql"
+        "db:seed": "psql -d ecommerce_db -f ./db/seed.sql",
+        "test": "NODE_ENV=test jest /__tests__/ --runInBand --forceExit --silent=false"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "jest": "^29.7.0",
         "nodemon": "^3.1.0",
-        "prettier": "3.2.5"
+        "prettier": "3.2.5",
+        "supertest": "^6.3.4"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

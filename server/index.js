@@ -6,6 +6,7 @@ const path = require('path')
 const cors = require('cors')
 const corsOptions = require('./src/config/corsOptions')
 const verifyJWT = require('./src/middleware/verifyJWT')
+const client = require('./src/config/client')
 const cookieParser = require('cookie-parser')
 const PORT = process.env.PORT || 3000
 
@@ -32,16 +33,25 @@ app.all('*', (req, res) => {
     return res.status(404).json({ error: '404 Not Found' })
 })
 
-const test = async () => {}
-
 const init = async () => {
-    const client = require('./src/config/client')
     await client.connect()
     console.log('Connected to database')
+
+    if (process.env.NODE_ENV === 'test')
+        return new Promise((resolve) => {
+            const testServer = app.listen(0, () => {
+                console.log('Test server is running on port', testServer.address().port)
+                resolve(testServer)
+            })
+        })
 
     app.listen(PORT, () => {
         console.log(`App is listening on port ${PORT}!`)
     })
 }
 
-init()
+if (process.env.NODE_ENV !== 'test') {
+    init()
+}
+
+module.exports = { app, client, init }
