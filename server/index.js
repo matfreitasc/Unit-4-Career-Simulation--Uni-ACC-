@@ -32,6 +32,8 @@ app.all('*', (req, res) => {
     return res.status(404).json({ error: '404 Not Found' })
 })
 
+const test = async () => {}
+
 const init = async () => {
     const client = require('./src/config/client')
     await client.connect()

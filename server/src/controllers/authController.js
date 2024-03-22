@@ -15,10 +15,10 @@ const login = async (req, res) => {
     if (!user) return res.status(404).send('User not found')
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
-        const accessToken = jwt.sign({ id: user.id, isAdmin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1d',
         })
-        const refreshToken = jwt.sign({ id: user.id, isAdmin: user.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
+        const refreshToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '7d',
         })
         await updateRefreshToken({ id: user.id, token: refreshToken })
@@ -35,6 +35,7 @@ const login = async (req, res) => {
             email: user.email,
             first_name: user.first_name,
             last_name: user.last_name,
+            is_admin: user.is_admin,
             accessToken,
         })
     } else {
@@ -50,25 +51,22 @@ const register = async (req, res) => {
     const user = await findUserByEmail(email)
 
     if (user) return res.status(400).send('User already exists')
-    const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = await client.query(
+    await client.query(
         'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
         [first_name, last_name, email, hashedPassword]
     )
 
-    const accessToken = jwt.sign(
-        { email: newUser.rows[0].email, id: newUser.rows[0].id, isAdmin: newUser.rows[0].is_admin },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-            expiresIn: '1d',
-        }
-    )
-    const refreshToken = jwt.sign({ id: newUser.rows[0].id }, process.env.REFRESH_TOKEN_SECRET, {
+    const newUser = await findUserByEmail(email)
+
+    const accessToken = jwt.sign({ id: newUser.id, is_admin: newUser.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '1d',
+    })
+    const refreshToken = jwt.sign({ id: newUser.id, is_admin: newUser.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: '7d',
     })
 
-    await updateRefreshToken({ id: newUser.rows[0].id, token: refreshToken })
+    await updateRefreshToken({ id: newUser.id, token: refreshToken })
 
     res.cookie('jwt', refreshToken, {
         httpOnly: true,
@@ -80,10 +78,11 @@ const register = async (req, res) => {
     res.status(201).json({
         message: 'User created',
         user: {
-            id: newUser.rows[0].id,
-            email: newUser.rows[0].email,
-            first_name: newUser.rows[0].first_name,
-            last_name: newUser.rows[0].last_name,
+            id: newUser.id,
+            email: newUser.email,
+            first_name: newUser.first_name,
+            last_name: newUser.last_name,
+            is_admin: newUser.is_admin,
             token: accessToken,
         },
     })
@@ -103,7 +102,7 @@ const logout = async (req, res) => {
     const refreshToken = cookies.jwt
     const user = await findByToken(refreshToken)
 
-    if (!user.rows[0]) {
+    if (!user) {
         res.clearCookie('jwt', {
             httpOnly: true,
             // secured: true,
@@ -112,7 +111,7 @@ const logout = async (req, res) => {
         return res.sendStatus(204)
     }
 
-    // await updateRefreshToken(user.rows[0].id, null)
+    // await updateRefreshToken(user.id, null)
     await updateRefreshToken({ id: user.id, token: null })
     res.clearCookie('jwt', {
         httpOnly: true,

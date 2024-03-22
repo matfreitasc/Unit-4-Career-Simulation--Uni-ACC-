@@ -12,7 +12,7 @@ const verifyAdmin = (req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) return res.status(403).send('Forbidden ')
         // verify is the user is an admin
-        req.isAdmin = decoded.isAdmin
+        req.isAdmin = decoded.is_admin
         next()
     })
 }

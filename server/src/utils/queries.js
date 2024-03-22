@@ -1,5 +1,19 @@
 const client = require('../config/client')
 const uuid = require('uuid')
+const bcrypt = require('bcrypt')
+
+const createUserHandler = async (first_name, last_name, email, password) => {
+    const hashedPassword = await bcrypt.hash(password, 10)
+    try {
+        const { rows } = await client.query(
+            'INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
+            [first_name, last_name, email, password]
+        )
+        return rows[0]
+    } catch (e) {
+        throw new Error(e)
+    }
+}
 
 const findUserByEmail = async (email) => {
     try {
@@ -83,6 +97,7 @@ const getCartItemsByCartId = async (cartId) => {
 
 module.exports = {
     getUserCart,
+    createUserHandler,
     createUserCart,
     getCartItemsByCartId,
     getCartBySessionId,

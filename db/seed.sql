@@ -33,7 +33,7 @@ CREATE TABLE product (
 
 CREATE TABLE users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() ,
-    isAdmin BOOLEAN NOT NULL DEFAULT FALSE,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     first_name VARCHAR(200),
     last_name VARCHAR(200),
     email VARCHAR(200) NOT NULL UNIQUE,
@@ -72,18 +72,19 @@ CREATE TABLE cartItems (
     FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
+
 -- Trigger and function to make the first user admin
 CREATE OR REPLACE FUNCTION make_first_user_admin()
 RETURNS TRIGGER AS $$
 BEGIN
     IF (SELECT COUNT(*) FROM users) = 1 THEN
-        UPDATE users SET isAdmin = TRUE WHERE id = NEW.id;
+        UPDATE users SET is_admin = TRUE WHERE id = NEW.id;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_after_insert_on_users
+CREATE TRIGGER make_first_user_admin
 AFTER INSERT ON users
 FOR EACH ROW
 EXECUTE FUNCTION make_first_user_admin();
@@ -106,3 +107,4 @@ INSERT INTO product (name, description, category_id, price, quantity, available,
 INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Music', 'Apple Music is a music and video streaming service developed by Apple Inc. Users select music to stream to their device on-demand, or they can listen to existing, curated playlists.', 1, 9.99, 100, false, 'https://cdn.mos.cms.futurecdn.net/tyAj9JuL9U7MYmxrK4fxbh.jpg');
 INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Arcade', 'Apple Arcade is a video game subscription service by Apple Inc. for iOS, iPadOS, tvOS, and macOS devices. It was announced in March 2019, and launched in September 2019.', 1, 4.99, 100, false, 'https://www.cnet.com/a/img/resize/f872ceeda8cba8592fe36386f4ef5e395e784d4d/hub/2022/12/22/408c9668-ccf6-4e15-9a94-6b5b34c5e21d/apple-arcade-banner-2023-refresh-1920-1080-1.jpg?auto=webp&fit=crop&height=675&width=1200');
 INSERT INTO product (name, description, category_id, price, quantity, available, image_url) VALUES ('Apple Fitness+', 'Apple Fitness+ is a subscription service that offers workouts designed to be done with Apple Watch. It is available on iPhone, iPad, and Apple TV.', 1, 9.99, 100, true, 'https://64bitapps.com/wp-content/uploads/2022/05/apple-fitness.jpg');
+
