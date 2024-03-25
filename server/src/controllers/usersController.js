@@ -41,7 +41,7 @@ const updateUser = async (req, res) => {
             'UPDATE users SET first_name = $1, last_name = $2, email = $3, address = $4, address2 = $5, city = $6, state = $7, zip = $8, country = $9, WHERE id = $11 RETURNING *',
             [first_name, last_name, email, address, address2, city, state, zip, country, id]
         )
-        res.json({
+        res.status(200).json({
             message: 'Update successfully',
             user: rows[0],
         })

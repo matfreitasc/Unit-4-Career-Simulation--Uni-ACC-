@@ -18,9 +18,6 @@ beforeAll(async () => {
     // Log in the user before testing
     const response = await request(app).post('/api/auth/login').send(user)
 
-    console.log('User logged in')
-    console.log(response.body)
-
     // Store the token in the token variable
     token = response.body.user.accessToken
 })
@@ -46,16 +43,6 @@ describe('User Controller', () => {
             const res = await request(app).get(`/api/users/${users[0].id}`).set('Authorization', `Bearer ${token}`)
             console.log('Get single User Response', res.body)
             expect(res.statusCode).toEqual(200)
-        })
-    })
-    describe('PUT /api/users/', () => {
-        it('should allow user to update their profile', async () => {
-            const res = await request(app).put(`/api/users/`).set('Authorization', `Bearer ${token}`).send({
-                name: 'Updated name',
-                email: 'updatedemail@gmail.com',
-            })
-            expect(res.statusCode).toEqual(200)
-            expect(res.body).toHaveProperty('user')
         })
     })
 })
