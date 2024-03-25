@@ -63,7 +63,7 @@ const updateUserById = async (req, res) => {
             'UPDATE users SET first_name = $1, last_name = $2, email = $3, address = $4, address2 = $5, city = $6, state = $7, zip = $8, country = $9, is_admin = $11, WHERE id = $12 RETURNING *',
             [first_name, last_name, email, address, address2, city, state, zip, country, is_admin, id]
         )
-        res.json({
+        res.status(200).json({
             message: 'Update successfully',
             user: rows[0],
         })
@@ -76,7 +76,7 @@ const deleteUser = async (req, res) => {
     const { id } = req.params
     try {
         const { rows } = await client.query('DELETE FROM users WHERE id = $1 RETURNING *', [id])
-        res.json({
+        res.status(200).json({
             message: 'User deleted',
         })
     } catch (error) {
