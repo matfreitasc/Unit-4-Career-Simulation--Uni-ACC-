@@ -49,25 +49,11 @@ describe('User Controller', () => {
         })
     })
     describe('PUT /api/users/', () => {
-        it('should update an existing user', async () => {
+        it('should allow user to update their profile', async () => {
             const res = await request(app).put(`/api/users/`).set('Authorization', `Bearer ${token}`).send({
                 name: 'Updated name',
                 email: 'updatedemail@gmail.com',
             })
-            expect(res.statusCode).toEqual(200)
-            expect(res.body).toHaveProperty('user')
-        })
-    })
-
-    describe('PUT /api/users/:id', () => {
-        it('should update an existing user', async () => {
-            const res = await request(app)
-                .put(`/api/users/${users[0].id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: 'Updated name',
-                    email: 'updatedemail@gmail.com',
-                })
             expect(res.statusCode).toEqual(200)
             expect(res.body).toHaveProperty('user')
         })

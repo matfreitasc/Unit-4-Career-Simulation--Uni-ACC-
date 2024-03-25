@@ -8,7 +8,7 @@ router.route('/').get(productsController.getAllProducts).post(verifyJWT, product
 
 router
     .route('/:id')
-    .get(verifyJWT, productsController.getProductById)
+    .get(productsController.getProductById)
     .put(verifyJWT, productsController.updateProduct)
     .delete(verifyJWT, productsController.deleteProduct)
 

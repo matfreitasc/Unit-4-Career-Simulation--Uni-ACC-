@@ -12,7 +12,9 @@ const verifyJWT = (req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) return res.status(403).send('Forbidden ')
         req.userId = decoded.id
-        if (decoded.is_admin) req.isAdmin = decoded.is_admin
+        if (decoded.is_admin) {
+            req.isAdmin = true
+        }
         next()
     })
 }
