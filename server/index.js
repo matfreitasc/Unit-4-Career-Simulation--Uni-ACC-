@@ -5,7 +5,6 @@ const app = express()
 const path = require('path')
 const cors = require('cors')
 const corsOptions = require('./src/config/corsOptions')
-const verifyJWT = require('./src/middleware/verifyJWT')
 const client = require('./src/config/client')
 const cookieParser = require('cookie-parser')
 const PORT = process.env.PORT || 3000
@@ -25,8 +24,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/api/products', require('./src/routes/products'))
 app.use('/api/auth', require('./src/routes/auth'))
 app.use('/api/cart', require('./src/routes/cart'))
-
-app.use(verifyJWT)
 app.use('/api/users', require('./src/routes/users'))
 
 app.all('*', (req, res) => {

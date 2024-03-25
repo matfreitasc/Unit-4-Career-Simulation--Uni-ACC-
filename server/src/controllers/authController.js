@@ -32,25 +32,31 @@ const login = async (req, res) => {
         })
         res.status(200).json({
             message: 'User logged in',
-            email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            is_admin: user.is_admin,
-            accessToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                is_admin: user.is_admin,
+                accessToken,
+            },
         })
     } else {
-        res.status(403).send('Invalid email or password')
+        res.status(403).json({ message: 'Invalid email or password' })
     }
 }
 
 const register = async (req, res) => {
     const { first_name, last_name, email, password } = req.body
 
-    if ((!email, !password)) return res.status(204).send('Email and password are required')
+    if ((!email, !password)) return res.status(204).json({ message: 'Email and password are required' })
 
     const user = await findUserByEmail(email)
 
-    if (user) return res.status(400).send('User already exists')
+    if (user)
+        return res.status(400).json({
+            message: 'User already exists',
+        })
 
     await createUserHandler(first_name, last_name, email, password)
 
@@ -115,7 +121,7 @@ const logout = async (req, res) => {
         // secured: true,
         // sameSite: 'none',
     })
-    res.status(200).send('User logged out')
+    res.status(200).json({ message: 'User logged out' })
 }
 
 const refreshToken = async (req, res) => {
