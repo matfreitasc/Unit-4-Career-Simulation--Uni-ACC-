@@ -39,13 +39,13 @@ const getProductById = async (req, res) => {
 }
 
 const updateProduct = async (req, res) => {
+    const { name, description, price, quantity, available, image_url } = req.body
     try {
         if (!req.isAdmin) return res.status(401).json({ message: 'Unauthorized' })
-        const { rows } = await client.query('UPDATE product SET name = $1, price = $2 WHERE id = $3 RETURNING *', [
-            req.body.name,
-            req.body.price,
-            req.params.id,
-        ])
+        const { rows } = await client.query(
+            'UPDATE product SET name = $1, description = $2, price = $3, quantity = $4, available = $5, image_url = $6 WHERE id = $7 RETURNING *',
+            [name, description, price, quantity, available, image_url, req.params.id]
+        )
         res.json(rows)
     } catch (error) {
         console.error(error)
