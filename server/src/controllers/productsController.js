@@ -2,7 +2,6 @@ const client = require('../config/client')
 
 const getAllProducts = async (req, res) => {
     try {
-        // get all products where available is true
         if (req.isAdmin) {
             const { rows } = await client.query('SELECT * FROM product')
             res.status(200).json(rows)

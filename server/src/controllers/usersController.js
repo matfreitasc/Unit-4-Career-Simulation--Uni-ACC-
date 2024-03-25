@@ -25,29 +25,31 @@ const getUserById = async (req, res) => {
         console.error(error)
     }
 }
+
 const updateUser = async (req, res) => {
-    const { id } = req.params
-    const { is_admin } = req.isAdmin
     const { first_name, last_name, email, address, address2, city, state, zip, country } = req.body
-    if (!id) return res.status(400).json({ message: 'User ID is required' })
-    if (is_admin) {
-        try {
-            const { rows } = await client.query(
-                'UPDATE users SET first_name = $1, last_name = $2, email = $3, address = $4, address2 = $5, city = $6, state = $7, zip = $8, country = $9, is_admin = $10 WHERE id = $11 RETURNING *',
-                [first_name, last_name, email, address, address2, city, state, zip, country, is_admin, id]
-            )
-            res.json({
-                message: 'User updated by admin',
-                user: rows[0],
-            })
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    const { id } = req.userId
     try {
         const { rows } = await client.query(
             'UPDATE users SET first_name = $1, last_name = $2, email = $3, address = $4, address2 = $5, city = $6, state = $7, zip = $8, country = $9, WHERE id = $11 RETURNING *',
             [first_name, last_name, email, address, address2, city, state, zip, country, id]
+        )
+        res.json({
+            message: 'Update successfully',
+            user: rows[0],
+        })
+    } catch (error) {
+        console.error(error)
+    }
+}
+const updateUserById = async (req, res) => {
+    if (!req.isAdmin) return res.status(401).json({ message: 'Unauthorized, this action required admin permissions' })
+    const { first_name, last_name, email, address, address2, city, state, zip, country, is_admin } = req.body
+    const { id } = req.userId
+    try {
+        const { rows } = await client.query(
+            'UPDATE users SET first_name = $1, last_name = $2, email = $3, address = $4, address2 = $5, city = $6, state = $7, zip = $8, country = $9, is_admin = $11, WHERE id = $12 RETURNING *',
+            [first_name, last_name, email, address, address2, city, state, zip, country, is_admin, id]
         )
         res.json({
             message: 'Update successfully',
@@ -74,5 +76,6 @@ module.exports = {
     getAllUsers,
     getUserById,
     updateUser,
+    updateUserById,
     deleteUser,
 }
