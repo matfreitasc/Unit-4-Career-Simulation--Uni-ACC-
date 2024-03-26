@@ -50,7 +50,10 @@ const updateCartHandler = async (req, res) => {
             // check if the cart exists with the session id and if it does, update it with the product
             if (await getCartBySessionId(req.body.sessionId)) {
                 const updatedCart = await updateCartService(req.body.cart_id, req.body.product_id, req.body.quantity)
-                return res.json(updatedCart)
+                return res.status(200).json({
+                    message: 'Cart updated',
+                    cart: updatedCart,
+                })
             }
             // if the cart does not exit than throw an error
             return res.status(404).json({ message: 'Cart not found' })
