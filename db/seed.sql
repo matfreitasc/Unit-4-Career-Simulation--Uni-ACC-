@@ -55,6 +55,7 @@ CREATE TABLE carts (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() ,
     user_id UUID,
     session_id UUID,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

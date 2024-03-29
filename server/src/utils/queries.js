@@ -46,7 +46,7 @@ const updateRefreshToken = async ({ id, token }) => {
 const getUserCart = async (id) => {
     try {
         // we will also get the cartItems belonging to the cart and user with the id
-        const { rows } = await client.query(`SELECT * from carts WHERE user_id = $1`, [id])
+        const { rows } = await client.query(`SELECT * from carts WHERE user_id = $1 AND is_active === TRUE`, [id])
         return rows
     } catch (e) {
         throw new Error(e)
