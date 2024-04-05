@@ -38,7 +38,7 @@ const login = async (req, res) => {
                 first_name: user.first_name,
                 last_name: user.last_name,
                 is_admin: user.is_admin,
-                accessToken,
+                access_token: accessToken,
             },
         })
     } else {
@@ -62,22 +62,6 @@ const register = async (req, res) => {
 
     const newUser = await findUserByEmail(email)
 
-    const accessToken = jwt.sign({ id: newUser.id, is_admin: newUser.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '1d',
-    })
-    const refreshToken = jwt.sign({ id: newUser.id, is_admin: newUser.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: '7d',
-    })
-
-    await updateRefreshToken({ id: newUser.id, token: refreshToken })
-
-    res.cookie('jwt', refreshToken, {
-        httpOnly: true,
-        // secured: true,
-        // sameSite: 'none',
-        maxAge: 24 * 60 * 60 * 1000,
-    })
-
     res.status(201).json({
         message: 'User created',
         user: {
@@ -86,7 +70,6 @@ const register = async (req, res) => {
             first_name: newUser.first_name,
             last_name: newUser.last_name,
             is_admin: newUser.is_admin,
-            token: accessToken,
         },
     })
 }

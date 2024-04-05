@@ -76,8 +76,16 @@ const createUserCart = async (id) => {
 
 const updateCartService = async (cartId, productId, quantity, sessionId) => {
     try {
+        if (sessionId) {
+            const { rows } = await client.query(
+                'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 WHERE $3 > 0 RETURNING *',
+                [cartId, productId, quantity]
+            )
+            return rows
+        }
+
         const { rows } = await client.query(
-            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 RETURNING *',
+            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 WHERE $3 > 0 RETURNING *',
             [cartId, productId, quantity]
         )
         return rows
