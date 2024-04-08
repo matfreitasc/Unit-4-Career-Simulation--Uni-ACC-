@@ -1,4 +1,4 @@
-const whiteList = ['http://localhost:3000', 'http://localhost:5173']
+const whiteList = ['http://localhost:3000', 'http://localhost:5173', 'https://marvelous-lily-8fb773.netlify.app/']
 const corsOptions = {
     origin: whiteList,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
