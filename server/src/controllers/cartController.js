@@ -10,11 +10,12 @@ const {
 
 const createCartHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization
+    console.log('authHeader', authHeader)
     try {
         // if no user_id is provided, create a cart with a session id
         if (!authHeader) {
             // create sessionsId
-            return res.status(201).json(await createUserCart())
+            return res.status(401).json({ message: 'Unauthorized, no headers were provided' })
         }
         // if the header is provided than we will decode the token and get the user id from it to prevent malicious requests
 
@@ -36,6 +37,7 @@ const createCartHandler = async (req, res, next) => {
 
 const updateCartHandler = async (req, res) => {
     const authHeader = req.headers.authorization
+    if (!authHeader) return res.status(401).json({ message: 'Unauthorized' })
     try {
         // This function will either add a product to the cart or update the quantity of a product in the cart if it already exists
         if (!req.params.id) return res.status(400).json({ message: 'No cart id provided' })
@@ -46,18 +48,6 @@ const updateCartHandler = async (req, res) => {
         if (!decoded) return res.status(401).json({ message: 'Unauthorized' })
 
         // if the user is not logged in, we will use the session id to get the cart and update it
-        if (req.body.sessionId) {
-            // check if the cart exists with the session id and if it does, update it with the product
-            if (await getCartBySessionId(req.body.sessionId)) {
-                const updatedCart = await updateCartService(req.body.cart_id, req.body.product_id, req.body.quantity)
-                return res.status(200).json({
-                    message: 'Cart updated',
-                    cart: updatedCart,
-                })
-            }
-            // if the cart does not exit than throw an error
-            return res.status(404).json({ message: 'Cart not found' })
-        }
 
         // get the cart of the user
         const getUserCart = await getUserCart(req.userId)
