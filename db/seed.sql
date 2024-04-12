@@ -63,14 +63,15 @@ CREATE TABLE carts (
 
 -- Each row represents a product in a cart
 CREATE TABLE cartItems (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL UNIQUE,
     cart_id UUID NOT NULL,
     product_id UUID NOT NULL,
     quantity INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
+    CONSTRAINT cart_id_product_id PRIMARY KEY (cart_id, product_id)
 );
 
 

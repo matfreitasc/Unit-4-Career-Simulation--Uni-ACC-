@@ -18,7 +18,7 @@
         "dev": "NODE_ENV=development nodemon server",
         "format": "prettier --write .",
         "db:create": "createdb ecommerce_db",
-        "db:seed": "psql -d ecommerce_db -f ./db/seed.sql",
+        "db:seed": "PGPASSWORD=gWrrGF4KM3RHbiJVZVs2YEylird23hA4 psql -h dpg-co9j74a0si5c739dj8ug-a.ohio-postgres.render.com -U ecommerce_db_72ee_user ecommerce_db_72ee -f ./db/seed.sql",
         "test": "NODE_ENV=test jest /__tests__/ --runInBand --forceExit --silent=false"
     },
     "author": "",

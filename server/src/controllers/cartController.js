@@ -57,18 +57,20 @@ const updateCartHandler = async (req, res) => {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         if (!decoded) return res.status(401).json({ message: 'Unauthorized' })
 
-        // if the user is not logged in, we will use the session id to get the cart and update it
-
         // get the cart of the user
-        const getUserCart = await getUserCart(req.userId)
-
-        if (!getUserCart.rows.length) return res.status(404).json({ message: 'Cart not found' })
-
-        if (getUserCart.rows[0].user_id !== req.userId) return res.status(401).json({ message: 'Unauthorized' })
-
-        const updatedCart = await updateCartService(req.body.cart_id, req.body.product_id, req.body.quantity)
-
-        res.json({ cart, updatedCart })
+        const userCart = await getUserCart(decoded.id)
+        // if (userCart && !userCart.length) return res.status(404).json({ message: 'Cart not found' })
+        console.log('userCart', userCart)
+        const updatedCart = await updateCartService(userCart.id, req.body.product_id, req.body.quantity)
+        const cartItems = await getCartItemsByCartId(updatedCart.id)
+        console.log('updatedCart', updatedCart, 'cartItems', cartItems)
+        return res.status(201).json({
+            message: 'Cart Updated successfully',
+            cart: {
+                ...userCart,
+                cartItems: updatedCart,
+            },
+        })
     } catch (error) {
         console.error(error)
     }

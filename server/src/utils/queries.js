@@ -77,7 +77,7 @@ const updateCartService = async (cartId, productId, quantity) => {
     }
     try {
         const { rows } = await client.query(
-            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 RETURNING *',
+            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT ON CONSTRAINT cart_id_product_id DO UPDATE SET quantity = $3 RETURNING *',
             [cartId, productId, quantity]
         )
         return rows
