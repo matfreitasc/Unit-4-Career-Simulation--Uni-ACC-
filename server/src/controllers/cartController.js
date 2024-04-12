@@ -19,10 +19,9 @@ const createCartHandler = async (req, res, next) => {
 
         const userCart = await getUserCart(decoded.id)
         if (userCart && userCart.id) {
-            console.log('Cart Already Exists')
             const cartItems = await getCartItemsByCartId(userCart.id)
             return res.status(201).json({
-                message: 'Cart already exists',
+                message: 'User cart found',
                 cart: {
                     ...userCart,
                     cartItems: cartItems,
