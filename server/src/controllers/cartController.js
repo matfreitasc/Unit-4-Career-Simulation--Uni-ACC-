@@ -61,14 +61,13 @@ const updateCartHandler = async (req, res) => {
         const userCart = await getUserCart(decoded.id)
         // if (userCart && !userCart.length) return res.status(404).json({ message: 'Cart not found' })
         console.log('userCart', userCart)
-        const updatedCart = await updateCartService(userCart.id, req.body.product_id, req.body.quantity)
-        const cartItems = await getCartItemsByCartId(updatedCart.id)
-        console.log('updatedCart', updatedCart, 'cartItems', cartItems)
+        await updateCartService(userCart.id, req.body.product_id, req.body.quantity)
+        const cartItems = await getCartItemsByCartId(userCart.id)
         return res.status(201).json({
             message: 'Cart Updated successfully',
             cart: {
                 ...userCart,
-                cartItems: updatedCart,
+                cartItems: cartItems,
             },
         })
     } catch (error) {
