@@ -44,21 +44,11 @@ const updateRefreshToken = async ({ id, token }) => {
 }
 
 const getUserCart = async (id) => {
+    console.log('id', id)
     try {
         // we will also get the cartItems belonging to the cart and user with the id
-        const { rows } = await client.query(
-            `SELECT carts.id, cartItems.product_id, cartItems.quantity FROM cartItems LEFT JOIN carts ON cartItems.cart_id = carts.id WHERE cartItems.cart_id = $1 AND carts.is_active = TRUE`,
-            [id]
-        )
-        return rows
-    } catch (e) {
-        throw new Error(e)
-    }
-}
-const getCartBySessionId = async (sessionId) => {
-    try {
-        const { rows } = await client.query(`SELECT * from carts WHERE session_id = $1`, [sessionId])
-        return rows
+        const { rows } = await client.query(`SELECT * FROM carts WHERE user_id = $1 AND is_active = true`, [id])
+        return rows[0]
     } catch (e) {
         throw new Error(e)
     }
@@ -66,10 +56,6 @@ const getCartBySessionId = async (sessionId) => {
 
 const createUserCart = async (id) => {
     try {
-        if (!id) {
-            const { rows } = await client.query('INSERT INTO carts (session_id) VALUES ($1) RETURNING *', [uuid.v4()])
-            return rows[0]
-        }
         const { rows } = await client.query('INSERT INTO carts (user_id) VALUES ($1) RETURNING *', [id])
         return rows[0]
     } catch (e) {
@@ -77,16 +63,8 @@ const createUserCart = async (id) => {
     }
 }
 
-const updateCartService = async (cartId, productId, quantity, sessionId) => {
+const updateCartService = async (cartId, productId, quantity) => {
     try {
-        if (sessionId) {
-            const { rows } = await client.query(
-                'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 WHERE $3 > 0 RETURNING *',
-                [cartId, productId, quantity]
-            )
-            return rows
-        }
-
         const { rows } = await client.query(
             'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 WHERE $3 > 0 RETURNING *',
             [cartId, productId, quantity]
@@ -111,7 +89,6 @@ module.exports = {
     createUserHandler,
     createUserCart,
     getCartItemsByCartId,
-    getCartBySessionId,
     updateCartService,
     findUserByEmail,
     findByToken,

@@ -1,6 +1,6 @@
 const client = require('../config/client')
 const jwt = require('jsonwebtoken')
-const { getUserCart, createUserCart, getCartItemsByCartId, updateCartService } = require('../utils/queries')
+const { getUserCart, createUserCart, updateCartService, getCartItemsByCartId } = require('../utils/queries')
 
 const createCartHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization
@@ -18,11 +18,27 @@ const createCartHandler = async (req, res, next) => {
         if (!decoded) return res.status(401).json({ message: 'Unauthorized' })
 
         const userCart = await getUserCart(decoded.id)
-        if (userCart.length) {
-            const cartItems = await getCartItemsByCartId(userCart[0].id)
-            return res.status(200).json({ cart: userCart[0], cartItems })
+        if (userCart && userCart.id) {
+            console.log('Cart Already Exists')
+            const cartItems = await getCartItemsByCartId(userCart.id)
+            return res.status(201).json({
+                message: 'Cart already exists',
+                cart: {
+                    ...userCart,
+                    cartItems: cartItems,
+                },
+            })
         }
-        return res.status(201).json(await createUserCart(decoded.id))
+
+        const cart = await createUserCart(decoded.id)
+        const cartItems = await getCartItemsByCartId(cart.id)
+        return res.status(201).json({
+            message: 'Cart created',
+            cart: {
+                ...userCart,
+                cartItems: cartItems,
+            },
+        })
     } catch (error) {
         console.error(error)
     }
