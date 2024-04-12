@@ -1,16 +1,9 @@
 const client = require('../config/client')
 const jwt = require('jsonwebtoken')
-const {
-    getUserCart,
-    createUserCart,
-    getCartItemsByCartId,
-    updateCartService,
-    getCartBySessionId,
-} = require('../utils/queries')
+const { getUserCart, createUserCart, getCartItemsByCartId, updateCartService } = require('../utils/queries')
 
 const createCartHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization
-    console.log('authHeader', authHeader)
     try {
         // if no user_id is provided, create a cart with a session id
         if (!authHeader) {
