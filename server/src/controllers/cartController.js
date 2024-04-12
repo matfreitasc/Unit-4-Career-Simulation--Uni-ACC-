@@ -49,8 +49,9 @@ const updateCartHandler = async (req, res) => {
     if (!authHeader) return res.status(401).json({ message: 'Unauthorized' })
     try {
         // This function will either add a product to the cart or update the quantity of a product in the cart if it already exists
-        if (!req.params.id) return res.status(400).json({ message: 'No cart id provided' })
         if (!req.body.product_id) return res.status(400).json({ message: 'No product id provided' })
+        if (!req.body.quantity)
+            return res.status(400).json({ message: 'No quantity provided, quantity must be at least 0' })
 
         const token = authHeader.split(' ')[1]
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
@@ -82,7 +83,9 @@ const deleteCartHandler = async (req, res) => {
 
         if (getUserCart.rows[0].user_id !== req.userId) return res.status(401).json({ message: 'Unauthorized' })
 
-        const { rows } = await client.query('DELETE FROM cart WHERE id = $1 RETURNING *', [getUserCart.rows[0].id])
+        const { rows } = await client.query('UPDATE carts.is_active == false WHERE carts.id = $1', [
+            getUserCart.rows[0].id,
+        ])
         res.json(rows)
     } catch (error) {
         console.error(error)

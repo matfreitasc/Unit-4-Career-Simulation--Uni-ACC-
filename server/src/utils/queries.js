@@ -64,9 +64,20 @@ const createUserCart = async (id) => {
 }
 
 const updateCartService = async (cartId, productId, quantity) => {
+    if (quantity === 0) {
+        try {
+            const { rows } = await client.query('DELETE FROM cartItems WHERE cart_id = $1 AND product_id = $2', [
+                cartId,
+                productId,
+            ])
+            return rows
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
     try {
         const { rows } = await client.query(
-            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 WHERE $3 > 0 RETURNING *',
+            'INSERT INTO cartItems (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = $3 RETURNING *',
             [cartId, productId, quantity]
         )
         return rows
