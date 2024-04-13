@@ -49,8 +49,6 @@ const updateCartHandler = async (req, res) => {
     try {
         // This function will either add a product to the cart or update the quantity of a product in the cart if it already exists
         if (!req.body.product_id) return res.status(400).json({ message: 'No product id provided' })
-        if (!req.body.quantity)
-            return res.status(400).json({ message: 'No quantity provided, quantity must be at least 0' })
 
         const token = authHeader.split(' ')[1]
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
