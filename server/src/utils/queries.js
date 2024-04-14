@@ -88,7 +88,10 @@ const updateCartService = async (cartId, productId, quantity) => {
 
 const getCartItemsByCartId = async (cartId) => {
     try {
-        const { rows } = await client.query('SELECT * FROM cartItems WHERE cart_id = $1', [cartId])
+        const { rows } = await client.query(
+            'SELECT cartItems.product_id, cartItems.quantity, products.name, products.price FROM cartItems JOIN products ON cartItems.product_id = products.id WHERE cartItems.cart_id = $1',
+            [cartId]
+        )
         return rows
     } catch (error) {
         throw new Error(error)

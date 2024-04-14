@@ -16,7 +16,7 @@ const login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
         const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '1d',
+            expiresIn: '10s',
         })
         const refreshToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '7d',
@@ -122,7 +122,7 @@ const refreshToken = async (req, res) => {
             expiresIn: '1d',
         })
         res.status(200).json({
-            accessToken,
+            access_token: accessToken,
         })
     })
 }
