@@ -122,6 +122,13 @@ const refreshToken = async (req, res) => {
             expiresIn: '10s',
         })
         res.status(200).json({
+            user: {
+                id: user.id,
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                is_admin: user.is_admin,
+            },
             access_token: accessToken,
         })
     })
