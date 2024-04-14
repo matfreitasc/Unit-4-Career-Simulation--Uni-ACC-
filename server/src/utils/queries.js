@@ -27,7 +27,7 @@ const findUserByEmail = async (email) => {
 const findByToken = async (token) => {
     try {
         const result = await client.query('SELECT * FROM users WHERE refresh_token = $1', [token])
-        console.log('result', result.rows[0])
+
         return result.rows[0]
     } catch (e) {
         throw new Error(e)
@@ -44,7 +44,6 @@ const updateRefreshToken = async ({ id, token }) => {
 }
 
 const getUserCart = async (id) => {
-    console.log('id', id)
     try {
         // we will also get the cartItems belonging to the cart and user with the id
         const { rows } = await client.query(`SELECT * FROM carts WHERE user_id = $1 AND is_active = true`, [id])
@@ -89,7 +88,7 @@ const updateCartService = async (cartId, productId, quantity) => {
 const getCartItemsByCartId = async (cartId) => {
     try {
         const { rows } = await client.query(
-            'SELECT cartItems.product_id, cartItems.quantity, products.name, products.price FROM cartItems JOIN products ON cartItems.product_id = products.id WHERE cartItems.cart_id = $1',
+            'SELECT cartItems.cart_id, cartItems.product_id, cartItems.quantity, product.name, product.price, product.image_url FROM cartItems JOIN product ON cartItems.product_id = product.id WHERE cartItems.cart_id = $1',
             [cartId]
         )
         return rows

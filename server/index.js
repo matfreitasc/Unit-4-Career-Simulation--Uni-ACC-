@@ -25,13 +25,12 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/api/products', require('./src/routes/products'))
 app.use('/api/auth', require('./src/routes/auth'))
 app.use('/api/cart', require('./src/routes/cart'))
+app.use('/api/users', require('./src/routes/users'))
 
 app.all('*', (req, res) => {
     return res.status(404).json({ error: '404 Not Found' })
 })
 
-app.use(verifyJWT)
-app.use('/api/users', require('./src/routes/users'))
 
 
 

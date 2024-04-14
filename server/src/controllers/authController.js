@@ -119,7 +119,7 @@ const refreshToken = async (req, res) => {
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
         if (error || user.id !== decoded.id) return res.status(403).send('Forbidden')
         const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '1d',
+            expiresIn: '10s',
         })
         res.status(200).json({
             access_token: accessToken,
