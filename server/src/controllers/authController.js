@@ -114,10 +114,9 @@ const refreshToken = async (req, res) => {
 
     const refreshToken = cookies.jwt
     const user = await findByToken(refreshToken)
-
-    if (!user) return res.status(403).send('Forbidden')
+    if (!user && !user.id) return res.status(403).send('Forbidden - User not found')
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-        if (error || user.id !== decoded.id) return res.status(403).send('Forbidden')
+        if (error || user.id !== decoded.id) return res.status(403).send('Forbidden - Invalid token')
         const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1d',
         })
