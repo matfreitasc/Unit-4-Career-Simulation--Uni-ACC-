@@ -16,7 +16,7 @@ const login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password)
     if (validPassword) {
         const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '10s',
+            expiresIn: '1d',
         })
         const refreshToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '7d',
@@ -26,8 +26,8 @@ const login = async (req, res) => {
         // Only refresh token is stored in the cookie and not the access token
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            // secured: false,
-            // sameSite: 'none',
+            secured: true,
+            sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.status(200).json({
@@ -91,8 +91,8 @@ const logout = async (req, res) => {
     if (!user) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            // secured: true,
-            // sameSite: 'none',
+            secured: true,
+            sameSite: 'none',
         })
         return res.sendStatus(204)
     }
@@ -101,8 +101,8 @@ const logout = async (req, res) => {
     await updateRefreshToken({ id: user.id, token: null })
     res.clearCookie('jwt', {
         httpOnly: true,
-        // secured: true,
-        // sameSite: 'none',
+        secured: true,
+        sameSite: 'none',
     })
     res.status(200).json({ message: 'User logged out' })
 }
@@ -119,8 +119,9 @@ const refreshToken = async (req, res) => {
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
         if (error || user.id !== decoded.id) return res.status(403).send('Forbidden')
         const accessToken = jwt.sign({ id: user.id, is_admin: user.is_admin }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '10s',
+            expiresIn: '1d',
         })
+
         res.status(200).json({
             user: {
                 id: user.id,
