@@ -79,8 +79,8 @@ const logout = async (req, res) => {
     if (!cookies?.jwt) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            // secured: true,
-            // sameSite: 'none',
+            secured: true,
+            sameSite: 'none',
         })
         return res.sendStatus(204)
     }
