@@ -26,8 +26,8 @@ const login = async (req, res) => {
         // Only refresh token is stored in the cookie and not the access token
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
-            secured: true,
-            sameSite: 'none',
+            // secured: true,
+            // sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.status(200).json({
@@ -79,8 +79,8 @@ const logout = async (req, res) => {
     if (!cookies?.jwt) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            secured: true,
-            sameSite: 'none',
+            // secured: true,
+            // sameSite: 'none',
         })
         return res.sendStatus(204)
     }
@@ -91,8 +91,8 @@ const logout = async (req, res) => {
     if (!user) {
         res.clearCookie('jwt', {
             httpOnly: true,
-            secured: true,
-            sameSite: 'none',
+            // secured: true,
+            // sameSite: 'none',
         })
         return res.sendStatus(204)
     }
@@ -101,8 +101,8 @@ const logout = async (req, res) => {
     await updateRefreshToken({ id: user.id, token: null })
     res.clearCookie('jwt', {
         httpOnly: true,
-        secured: true,
-        sameSite: 'none',
+        // secured: true,
+        // sameSite: 'none',
     })
     res.status(200).json({ message: 'User logged out' })
 }
