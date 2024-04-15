@@ -49,12 +49,12 @@ const updateCartHandler = async (req, res) => {
 
 const deleteCartHandler = async (req, res) => {
     try {
-        const getUserCart = await getUserCart(req.userId)
-        const { rows } = await client.query('UPDATE carts.is_active == false WHERE carts.id = $1', [
-            getUserCart.rows[0].id,
+        const userCart = await getUserCart(req.userId)
+        const { rows } = await client.query('UPDATE carts SET is_active = false WHERE id = $1 RETURNING *', [
+            userCart.id,
         ])
-        return res.status(201).json({
-            message: 'Cart deleted successfully',
+        return res.status(200).json({
+            message: 'Order has been processed successfully',
         })
     } catch (error) {
         console.error(error)
